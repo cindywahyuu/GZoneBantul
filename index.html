@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="css/leaflet.photon.css">
+    <link rel="stylesheet" href="css/leaflet-measure.css">
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100% - 50px);
+            /* supaya tidak tertutup navbar */
+            padding: 0;
+            margin-top: 50px;
+        }
+
+        <style>html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Map menyesuaikan navbar + footer */
+        #map {
+            width: 100%;
+            height: 100%-110px;
+            margin-top: 60px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 130px;
+
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            /* wajib */
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 20px;
+
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            color: #002b5c;
+            z-index: 9999;
+
+            footer p {
+                margin: 0;
+                text-align: center;
+                font-weight: 500;
+            }
+        }
+
+        footer p {
+            margin: 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        /* MODAL */
+#modalInfo {
+    display: none;
+
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    background: rgba(0,0,0,0.5);
+
+    z-index: 9999999999 !important; /* paling atas */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+    </style>
+    </style>
+    <title>Dashboard Zona Gempabumi</title>
+</head>
+
+<!-- MODAL INFO -->
+<div id="modalInfo" style="
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+">
+
+    <!-- Isi Modal -->
+    <div style="
+        background: white;
+        width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 50px auto;
+        position: relative;
+        font-family: Arial, sans-serif;
+    ">
+
+        <!-- Tombol Close -->
+        <span onclick="closeModalInfo()" style="
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: bold;
+        ">
+            &times;
+        </span>
+
+        <h2 style="color: #002b5c; margin-bottom: 10px;">
+            Informasi Dashboard
+        </h2>
+
+        <p style="font-size: 14px; line-height: 1.6; text-align: justify;">
+            Dashboard ini merupakan media visualisasi hasil analisis spasial terkait
+            pemetaan zona kerentanan wilayah gempabumi dan analisis rute evakuasi.
+            Dashboard dibuat untuk membantu pengguna dalam memahami tingkat
+            kerentanan wilayah serta alternatif jalur evakuasi menuju lokasi tujuan
+            evakuasi secara lebih interaktif dan informatif.
+        </p>
+
+        <h3 style="color: #002b5c;">Metode Analisis</h3>
+
+        <p style="font-size: 14px; line-height: 1.6; text-align: justify;">
+            Analisis zona kerentanan wilayah gempabumi dilakukan menggunakan
+            metode <b>Analytical Hierarchy Process (AHP)</b>. Metode ini digunakan
+            untuk menentukan bobot dari setiap parameter berdasarkan tingkat
+            kepentingannya sehingga menghasilkan peta zona kerentanan wilayah
+            gempabumi.
+        </p>
+
+        <p style="font-size: 14px; line-height: 1.6; text-align: justify;">
+            Analisis rute evakuasi dilakukan menggunakan metode
+            <b>Network Analysis</b> dengan pendekatan pencarian
+            <b>rute tercepat</b> menuju titik evakuasi atau fasilitas tujuan.
+        </p>
+
+        <h3 style="color: #002b5c;">Disclaimer</h3>
+
+        <p style="
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: justify;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+        ">
+            Rute evakuasi yang ditampilkan pada dashboard ini hanya berfokus
+            pada hasil analisis rute tercepat berdasarkan jaringan jalan yang tersedia.
+            Analisis belum mempertimbangkan faktor lain seperti fungsi jalan,
+            tingkat kerusakan jalan, kondisi lalu lintas atau kemacetan,
+            hambatan saat bencana, kapasitas jalan, maupun kondisi lapangan
+            lainnya yang dapat memengaruhi proses evakuasi secara aktual.
+        </p>
+
+        <h3 style="color: #002b5c;">Identitas Pembuat</h3>
+
+        <p style="font-size: 14px; line-height: 1.6;">
+            <b>Nama:</b> Cindy Wahyu Karisma <br>
+            <b>NIM:</b> 22/506189/SV/22108 <br>
+            <b>Program Studi:</b> Sistem Informasi Geografis <br>
+            <b>Institusi:</b> Universitas Gadjah Mada <br>
+            <b>Tahun:</b> 2026
+        </p>
+
+    </div>
+</div>
+
+<body>
+    <!-- Navbar -->
+    <nav style="
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+height: 60px;
+background-color: white;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 40px;
+font-family: 'Segoe UI', sans-serif;
+z-index: 9999;
+box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+">
+        <!-- Logo dan Judul -->
+        <div style="display: flex; align-items: center;">
+            <img src="asset/earth_12873950.png" alt="Logo" style="height: 30px; margin-right: 10px;">
+            <span style="font-size: 22px; font-weight: bold; color: #002b5c;">GZone</span>
+        </div>
+
+       <!-- Menu Navigasi -->
+<div style="display: flex; gap: 20px;">
+    <a href="#"
+        onclick="openModalInfo()"
+        style="color: #002b5c; text-decoration: none; font-weight: 500;">
+        Info
+    </a>
+</div>
+
+
+
+<script>
+    function openModalInfo() {
+        document.getElementById("modalInfo").style.display = "block";
+    }
+
+    function closeModalInfo() {
+        document.getElementById("modalInfo").style.display = "none";
+    }
+
+    // Tutup modal saat klik area luar
+    window.onclick = function(event) {
+        const modal = document.getElementById("modalInfo");
+
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+    </nav>
+    <div id="map">
+
+
+        <!-- KONTEN FOOTER -->
+        <footer>
+            <div style="display: flex; align-items: flex-start; gap: 5px;">
+
+                <!-- ICON + TEKS -->
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 15px;">
+                    <img src="asset/earth_12873950.png" alt="Logo" style="height: 60px;">
+                    <p style="margin: 5px 0 0 0; font-weight: bold;">GEMPABUMI</p>
+                </div>
+
+                <!-- TEKS SAMPING -->
+                <div style="text-align: left;">
+                    <p style="margin: 0; text-align: flex-end; font-weight: 500;">Zona Kerentanan Wilayah Gempabumi</p>
+                    <p style="margin: 0; text-align: left; font-size: 12px;">Kabupaten Bantul</p>
+
+                    <div style="
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    height: 100%;
+                    padding: 5px 10px; ">
+
+                        <!-- BARIS 1 -->
+                        <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                            <img src="asset/rendah_bantul.jpg" style="height: 25px;">
+                            <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                                <span style="font-weight: bold;">Kerentanan Rendah</span>
+                                <span style="font-size: 11px;">2,206 km2</span>
+                            </div>
+                        </div>
+
+                        <!-- BARIS 2 -->
+                        <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                            <img src="asset/sedang_bantul.jpg" style="height: 25px;">
+                            <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                                <span style="font-weight: bold;">Kerentanan Sedang</span>
+                                <span style="font-size: 11px;">8,341 km2</span>
+                            </div>
+                        </div>
+
+                        <!-- BARIS 3 -->
+                        <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                            <img src="asset/tinggi_bantul.jpg" style="height: 25px;">
+                            <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                                <span style="font-weight: bold;">Kerentanan Tinggi</span>
+                                <span style="font-size: 11px;">41,967 km2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            <div style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 120px;
+    overflow: hidden;
+    padding: 30px;
+">
+
+                <!-- TEKS -->
+                <div style="text-align: left; width: 50%;">
+                    <p style="margin: 0; font-size: 12px;">Parameter Gempabumi</p>
+
+                    <ul style="
+            margin: 5px 0 0 0;
+            padding-left: 15px;
+            font-size: 12px;
+        ">
+                        <li>Jarak Sesar Aktif</li>
+                        <li>Litologi</li>
+                        <li>Kemiringan Lereng</li>
+                        <li>Kepadatan Bangunan</li>
+                        <li>Kepadatan Penduduk</li>
+                        <li>Kelompok Rentan</li>
+                    </ul>
+                </div>
+
+                <!-- CHART + LEGEND -->
+                <div style="
+        width: 260px;   /* lebih lebar karena ada legend */
+        height: 180px;
+        padding: 15px;
+    ">
+                    <canvas id="pieChart"></canvas>
+                </div>
+
+            </div>
+
+            <script>
+                const dataValues = [27, 26, 21, 10, 9, 7];
+                const total = dataValues.reduce((a, b) => a + b, 0);
+
+                const ctx = document.getElementById('pieChart');
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [
+                            'Jarak Sesar', 'Litologi', 'Kemiringan Lereng',
+                            'Kepadatan Bangunan', 'Kepadatan Penduduk', 'Kelompok Rentan'
+                        ],
+                        datasets: [{
+                            data: dataValues,
+                            backgroundColor: [
+                                '#ff6384', '#36a2eb', '#ffce56',
+                                '#4bc0c0', '#9966ff', '#ff9f40'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right', // 👉 PINDAH KE SAMPING
+                                labels: {
+                                    boxWidth: 10,
+                                    font: {
+                                        size: 8
+                                    },
+                                    generateLabels: function (chart) {
+                                        const data = chart.data;
+                                        return data.labels.map((label, i) => {
+                                            const value = data.datasets[0].data[i];
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return {
+                                                text: label + ' (' + percentage + '%)',
+                                                fillStyle: data.datasets[0].backgroundColor[i],
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const value = context.raw;
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return context.label + ': ' + percentage + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+
+            <!-- TEKS SAMPING -->
+            <div style="text-align: left;">
+                <p style="margin: 0; text-align: left; font-size: 12px;">EVAKUASI</p>
+
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    height: 100%;
+                    padding: 5px 10px; ">
+
+                    <!-- BARIS 1 -->
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                        <img src="asset/smart-house_12873859.png" style="height: 25px;">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                            <span style="font-weight: bold;">Kantor BPBD</span>
+                        </div>
+                    </div>
+
+                    <!-- BARIS 2 -->
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                        <img src="asset/medical_3191060.png" style="height: 25px;">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                            <span style="font-weight: bold;">TES/TEA</span>
+                            <span style="font-size: 11px;">88</span>
+                        </div>
+                    </div>
+
+                    <!-- BARIS 3 -->
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                        <img src="asset/add_11917377.png" style="height: 25px;">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                            <span style="font-weight: bold;">RS</span>
+                            <span style="font-size: 11px;">11</span>
+                        </div>
+                    </div>
+
+                    <!-- BARIS 4 -->
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
+                        <img src="asset/route_17492912.png" style="height: 25px;">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                            <span style="font-weight: bold;">Rute Evakuasi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KANAN: PANEL BUTTON (TERPISAH) -->
+            <div style="
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-left: 70px;
+    ">
+                <a href="asset/Peta/Peta Zona Gempabumi.pdf" download="Peta Zona Gempabumi.pdf">
+                        <button style="
+            width: 250px;
+            height: 35px;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download Peta Zona Kerentanan Wilayah Gempabumi
+                        </button>
+                    </a>
+
+                <button onclick="openModal()" style="
+    width: 250px;
+    height: 35px;
+    background: #8db3e2;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+">
+                    Download Peta Parameter Gempabumi
+                </button>
+
+                <button onclick="openModalRute()" style="
+    width: 250px;
+    height: 35px;
+    background: #8db3e2;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+">
+                    Download Peta Rute Evakuasi
+                </button>
+
+            </div>
+    </div>
+    </div>
+    </footer>
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/L.Control.Layers.Tree.min.js"></script>
+    <script src="js/L.Control.Locate.min.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <script src="js/leaflet.pattern.js"></script>
+    <script src="js/leaflet-hash.js"></script>
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    <script src="js/leaflet.photon.js"></script>
+    <script src="js/leaflet-measure.js"></script>
+    <script src="data/AdministrasiKecamatan_4.js"></script>
+    <script src="data/RuteSkenarioBPBDTESTEA_5.js"></script>
+    <script src="data/RuteSkenarioTESTEARS_6.js"></script>
+    <script src="data/BPBD_7.js"></script>
+    <script src="data/RS_8.js"></script>
+    <script src="data/TESTEA_9.js"></script>
+    <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl: false, maxZoom: 28, minZoom: 1
+        }).fitBounds([[-8.111578697009904, 110.02041505057917], [-7.725508989054691, 110.83109669210731]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({ truncate: { length: 30, location: 'smart' } });
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var rows = tempDiv.querySelectorAll('tr');
+            for (var i = 0; i < rows.length; i++) {
+                var td = rows[i].querySelector('td.visible-with-data');
+                var key = td ? td.id : '';
+                if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                    rows[i].parentNode.removeChild(rows[i]);
+                }
+            }
+            return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function () {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function () {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function () {
+                        popup.update();
+                    });
+                    setTimeout(function () {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({ locateOptions: { maxZoom: 19 } }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleTerrain_0');
+        map.getPane('pane_GoogleTerrain_0').style.zIndex = 400;
+        var layer_GoogleTerrain_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleTerrain_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleTerrain_0;
+        map.addLayer(layer_GoogleTerrain_0);
+        map.createPane('pane_GoogleSatellite_1');
+        map.getPane('pane_GoogleSatellite_1').style.zIndex = 401;
+        var layer_GoogleSatellite_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_1',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleSatellite_1;
+        map.addLayer(layer_GoogleSatellite_1);
+        map.createPane('pane_GoogleRoad_2');
+        map.getPane('pane_GoogleRoad_2').style.zIndex = 402;
+        var layer_GoogleRoad_2 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleRoad_2',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleRoad_2;
+        map.addLayer(layer_GoogleRoad_2);
+        map.createPane('pane_ZonaKerentananWilayahGempabumi_3');
+        map.getPane('pane_ZonaKerentananWilayahGempabumi_3').style.zIndex = 403;
+        var img_ZonaKerentananWilayahGempabumi_3 = 'data/ZonaKerentananWilayahGempabumi_3.png';
+        var img_bounds_ZonaKerentananWilayahGempabumi_3 = [[-8.028524579660756, 110.21100583601607], [-7.7676338577054045, 110.5217803036063]];
+        var layer_ZonaKerentananWilayahGempabumi_3 = new L.imageOverlay(img_ZonaKerentananWilayahGempabumi_3,
+            img_bounds_ZonaKerentananWilayahGempabumi_3,
+            { pane: 'pane_ZonaKerentananWilayahGempabumi_3' });
+        bounds_group.addLayer(layer_ZonaKerentananWilayahGempabumi_3);
+        map.addLayer(layer_ZonaKerentananWilayahGempabumi_3);
+        function pop_AdministrasiKecamatan_4(feature, layer) {
+            layer.on({
+                mouseout: function (e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function (feature) {
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAMOBJ'] !== null ? autolinker.link(String(feature.properties['NAMOBJ']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_AdministrasiKecamatan_4_0() {
+            return {
+                pane: 'pane_AdministrasiKecamatan_4',
+                opacity: 1,
+                color: 'rgba(239,159,31,1.0)',
+                dashArray: '5.0,1.0,2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(141,90,153,0.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_AdministrasiKecamatan_4');
+        map.getPane('pane_AdministrasiKecamatan_4').style.zIndex = 404;
+        map.getPane('pane_AdministrasiKecamatan_4').style['mix-blend-mode'] = 'normal';
+        var layer_AdministrasiKecamatan_4 = new L.geoJson(json_AdministrasiKecamatan_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AdministrasiKecamatan_4',
+            layerName: 'layer_AdministrasiKecamatan_4',
+            pane: 'pane_AdministrasiKecamatan_4',
+            onEachFeature: pop_AdministrasiKecamatan_4,
+            style: style_AdministrasiKecamatan_4_0,
+        });
+        bounds_group.addLayer(layer_AdministrasiKecamatan_4);
+        map.addLayer(layer_AdministrasiKecamatan_4);
+        function pop_RuteSkenarioBPBDTESTEA_5(feature, layer) {
+            layer.on({
+                mouseout: function (e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function (feature) {
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">jarak_km</th>\
+                        <td class="visible-with-data" id="jarak_km">' + (feature.properties['jarak_km'] !== null ? autolinker.link(String(feature.properties['jarak_km']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RuteSkenarioBPBDTESTEA_5_0() {
+            return {
+                pane: 'pane_RuteSkenarioBPBDTESTEA_5',
+                opacity: 1,
+                color: 'rgba(219,30,42,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RuteSkenarioBPBDTESTEA_5');
+        map.getPane('pane_RuteSkenarioBPBDTESTEA_5').style.zIndex = 405;
+        map.getPane('pane_RuteSkenarioBPBDTESTEA_5').style['mix-blend-mode'] = 'normal';
+        var layer_RuteSkenarioBPBDTESTEA_5 = new L.geoJson(json_RuteSkenarioBPBDTESTEA_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RuteSkenarioBPBDTESTEA_5',
+            layerName: 'layer_RuteSkenarioBPBDTESTEA_5',
+            pane: 'pane_RuteSkenarioBPBDTESTEA_5',
+            onEachFeature: pop_RuteSkenarioBPBDTESTEA_5,
+            style: style_RuteSkenarioBPBDTESTEA_5_0,
+        });
+        bounds_group.addLayer(layer_RuteSkenarioBPBDTESTEA_5);
+        function pop_RuteSkenarioTESTEARS_6(feature, layer) {
+            layer.on({
+                mouseout: function (e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function (feature) {
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">jarak_km</th>\
+                        <td class="visible-with-data" id="jarak_km">' + (feature.properties['jarak_km'] !== null ? autolinker.link(String(feature.properties['jarak_km']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RuteSkenarioTESTEARS_6_0() {
+            return {
+                pane: 'pane_RuteSkenarioTESTEARS_6',
+                opacity: 1,
+                color: 'rgba(219,30,42,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RuteSkenarioTESTEARS_6');
+        map.getPane('pane_RuteSkenarioTESTEARS_6').style.zIndex = 406;
+        map.getPane('pane_RuteSkenarioTESTEARS_6').style['mix-blend-mode'] = 'normal';
+        var layer_RuteSkenarioTESTEARS_6 = new L.geoJson(json_RuteSkenarioTESTEARS_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RuteSkenarioTESTEARS_6',
+            layerName: 'layer_RuteSkenarioTESTEARS_6',
+            pane: 'pane_RuteSkenarioTESTEARS_6',
+            onEachFeature: pop_RuteSkenarioTESTEARS_6,
+            style: style_RuteSkenarioTESTEARS_6_0,
+        });
+        bounds_group.addLayer(layer_RuteSkenarioTESTEARS_6);
+        function pop_BPBD_7(feature, layer) {
+            layer.on({
+                mouseout: function (e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function (feature) {
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Keterangan</th>\
+                        <td class="visible-with-data" id="Keterangan">' + (feature.properties['Keterangan'] !== null ? autolinker.link(String(feature.properties['Keterangan']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_BPBD_7_0() {
+            return {
+                pane: 'pane_BPBD_7',
+                rotationAngle: 0.0,
+                rotationOrigin: 'center center',
+                icon: L.icon({
+                    iconUrl: 'markers/BPBD_7.svg',
+                    iconSize: [22.799999999999997, 22.799999999999997]
+                }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_BPBD_7');
+        map.getPane('pane_BPBD_7').style.zIndex = 407;
+        map.getPane('pane_BPBD_7').style['mix-blend-mode'] = 'normal';
+        var layer_BPBD_7 = new L.geoJson(json_BPBD_7, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_BPBD_7',
+            layerName: 'layer_BPBD_7',
+            pane: 'pane_BPBD_7',
+            onEachFeature: pop_BPBD_7,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_BPBD_7_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_BPBD_7);
+        function pop_RS_8(feature, layer) {
+            layer.on({
+                mouseout: function (e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function (feature) {
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Nama</th>\
+                        <td class="visible-with-data" id="Nama">' + (feature.properties['Nama'] !== null ? autolinker.link(String(feature.properties['Nama']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RS_8_0() {
+            return {
+                pane: 'pane_RS_8',
+                rotationAngle: 0.0,
+                rotationOrigin: 'center center',
+                icon: L.icon({
+                    iconUrl: 'markers/RS_8.svg',
+                    iconSize: [15.2, 15.2]
+                }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RS_8');
+        map.getPane('pane_RS_8').style.zIndex = 408;
+        map.getPane('pane_RS_8').style['mix-blend-mode'] = 'normal';
+        var layer_RS_8 = new L.geoJson(json_RS_8, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RS_8',
+            layerName: 'layer_RS_8',
+            pane: 'pane_RS_8',
+            onEachFeature: pop_RS_8,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_RS_8_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_RS_8);
+        function pop_TESTEA_9(feature, layer) {
+            layer.on({
+                mouseout: function (e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function (feature) {
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td class="visible-with-data" id="Name">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_TESTEA_9_0() {
+            return {
+                pane: 'pane_TESTEA_9',
+                rotationAngle: 0.0,
+                rotationOrigin: 'center center',
+                icon: L.icon({
+                    iconUrl: 'markers/TESTEA_9.svg',
+                    iconSize: [15.2, 15.2]
+                }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_TESTEA_9');
+        map.getPane('pane_TESTEA_9').style.zIndex = 409;
+        map.getPane('pane_TESTEA_9').style['mix-blend-mode'] = 'normal';
+        var layer_TESTEA_9 = new L.geoJson(json_TESTEA_9, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TESTEA_9',
+            layerName: 'layer_TESTEA_9',
+            pane: 'pane_TESTEA_9',
+            onEachFeature: pop_TESTEA_9,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_TESTEA_9_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_TESTEA_9);
+        const url = {
+            "Nominatim OSM": "https://nominatim.openstreetmap.org/search?format=geojson&addressdetails=1&",
+            "France BAN": "https://api-adresse.data.gouv.fr/search/?"
+        }
+        var photonControl = L.control.photon({
+            url: url["Nominatim OSM"],
+            feedbackLabel: '',
+            position: 'topleft',
+            includePosition: true,
+            initial: true,
+            // resultsHandler: myHandler,
+        }).addTo(map);
+        photonControl._container.childNodes[0].style.borderRadius = "10px"
+        // Create a variable to store the geoJSON data
+        var x = null;
+        // Create a variable to store the marker
+        var marker = null;
+        // Add an event listener to the Photon control to create a marker from the returned geoJSON data
+        var z = null;
+        photonControl.on('selected', function (e) {
+            console.log(photonControl.search.resultsContainer);
+            if (x != null) {
+                map.removeLayer(obj3.marker);
+                map.removeLayer(x);
+            }
+            obj2.gcd = e.choice;
+            x = L.geoJSON(obj2.gcd).addTo(map);
+            var label = typeof obj2.gcd.properties.label === 'undefined' ? obj2.gcd.properties.display_name : obj2.gcd.properties.label;
+            obj3.marker = L.marker(x.getLayers()[0].getLatLng()).bindPopup(label).addTo(map);
+            map.setView(x.getLayers()[0].getLatLng(), 17);
+            z = typeof e.choice.properties.label === 'undefined' ? e.choice.properties.display_name : e.choice.properties.label;
+            console.log(e);
+            e.target.input.value = z;
+        });
+        var search = document.getElementsByClassName("leaflet-photon leaflet-control")[0];
+        search.classList.add("leaflet-control-search")
+        search.style.display = "flex";
+        search.style.backgroundColor = "rgba(255,255,255,0.5)"
+
+        // Create the new button element
+        var button = document.createElement("div");
+        button.id = "gcd-button-control";
+        button.className = "gcd-gl-btn fa fa-search search-button";
+
+        // Insert the button at the beginning of the search control
+        search.insertBefore(button, search.firstChild);
+        last = search.lastChild;
+        last.style.display = "none";
+        button.addEventListener("click", function (e) {
+            if (last.style.display === "none") {
+                last.style.display = "block";
+            } else {
+                last.style.display = "none";
+            }
+        });
+        var overlaysTree = [
+            { label: '<img src="legend/TESTEA_9.png" /> TES/TEA', layer: layer_TESTEA_9 },
+            { label: '<img src="legend/RS_8.png" /> RS', layer: layer_RS_8 },
+            { label: '<img src="legend/BPBD_7.png" /> BPBD', layer: layer_BPBD_7 },
+            { label: '<img src="legend/RuteSkenarioTESTEARS_6.png" /> Rute Skenario TES/TEA - RS', layer: layer_RuteSkenarioTESTEARS_6 },
+            { label: '<img src="legend/RuteSkenarioBPBDTESTEA_5.png" /> Rute Skenario BPBD - TES/TEA', layer: layer_RuteSkenarioBPBDTESTEA_5 },
+            { label: '<img src="legend/AdministrasiKecamatan_4.png" /> Administrasi Kecamatan', layer: layer_AdministrasiKecamatan_4 },
+            { label: "Zona Kerentanan Wilayah Gempabumi", layer: layer_ZonaKerentananWilayahGempabumi_3 },
+            { label: "Google Road", layer: layer_GoogleRoad_2 },
+            { label: "Google Satellite", layer: layer_GoogleSatellite_1 },
+            { label: "Google Terrain", layer: layer_GoogleTerrain_0 },]
+        var lay = L.control.layers.tree(null, overlaysTree, {
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        var i = 0;
+        layer_AdministrasiKecamatan_4.eachLayer(function (layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NAMOBJ'] !== null ? String('<div style="color: #f8f8f8; font-size: 10pt; font-family: \'Arial Narrow\', sans-serif;">' + layer.feature.properties['NAMOBJ']) + '</div>' : ''), { permanent: true, offset: [-0, -16], className: 'css_AdministrasiKecamatan_4' });
+            labels.push(layer);
+            totalMarkers += 1;
+            layer.added = true;
+            addLabel(layer, i);
+            i++;
+        });
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        resetLabels([layer_AdministrasiKecamatan_4]);
+        map.on("zoomend", function () {
+            resetLabels([layer_AdministrasiKecamatan_4]);
+        });
+        map.on("layeradd", function () {
+            resetLabels([layer_AdministrasiKecamatan_4]);
+        });
+        map.on("layerremove", function () {
+            resetLabels([layer_AdministrasiKecamatan_4]);
+        });
+    </script>
+
+    <!-- MODAL -->
+    <div id="myModal" style="
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+">
+
+        <!-- CONTAINER -->
+        <div style="
+        background: rgba(255, 255, 255, 0.904);
+        width: 80%;
+        max-width: 800px;
+        margin: 80px auto;
+        padding: 20px;
+        border-radius: 10px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    ">
+
+            <h3 style="margin-top: 0;">Download Peta</h3>
+
+            <!-- GRID CARD -->
+            <div style="
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 🔥 3 kolom */
+    gap: 15px;
+">
+
+                <!-- CARD 1 - PARAMETER SESAR -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Peta Zona Sesar.png" style="width: 100%; height: 80px; object-fit: cover;">
+
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Zona Sesar</p>
+
+                    <a href="asset/Peta/Peta Zona Sesar.pdf" download="zona_sesar.png">
+                        <button style="
+            width: 100%;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+
+                <!-- CARD 2 - PAREMETER LITOLOGI -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Peta Geologi.png" style="width: 100%; height: 80px; object-fit: cover;">
+
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Litologi</p>
+
+                    <a href="asset/Peta/Peta Geologi.pdf" download="geologi.png">
+                        <button style="
+            width: 100%;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+
+                <!-- CARD 3 - KEMIRINGAN LERENG -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Peta Slope.png" style="width: 100%; height: 80px; object-fit: cover;">
+
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Kemiringan Lereng</p>
+
+                    <a href="asset/Peta/Peta Slope.pdf" download="slope.png">
+                        <button style="
+            width: 100%;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+                <!-- CARD 4 - KEPADATAN BANGUNAN -->
+                <div style="
+    width: 150px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+">
+                    <img src="asset/Peta/Kepadatan Bangunan.png" style="width: 100%; height: 80px; object-fit: cover;">
+
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Kepadatan Bangunan</p>
+
+                    <a href="asset/Peta/Kepadatan Bangunan.pdf" download="kepadatan_bangunan.png">
+                        <button style="
+            width: 100%;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+                <!-- CARD 5 - KEPADATAN PENDUDUK -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Peta KP.png" style="width: 100%; height: 80px; object-fit: cover;">
+
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Kepadatan Penduduk</p>
+
+                    <a href="asset/Peta/Kepadatan Penduduk.pdf" download="kepadatan_penduduk.png">
+                        <button style="
+            width: 100%;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+
+                <!-- CARD 6 - KELOMPOK RENTAN -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Peta KR.png" style="width: 100%; height: 80px; object-fit: cover;">
+
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Kelompok Rentan</p>
+
+                    <a href="asset/Peta/Kelompok Rentan.pdf" download="kelompok_rentan.png">
+                        <button style="
+            width: 100%;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+
+            </div>
+
+            <br>
+
+            <button onclick="closeModal()" style="
+            background: #ccc;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        ">
+                Tutup
+            </button>
+        </div>
+    </div>
+    <!--MODAL RUTE-->
+    <!-- MODAL -->
+    <div id="myModalRute" style="
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+">
+
+        <!-- CONTAINER -->
+        <div style="
+        background: rgba(255, 255, 255, 0.904);
+        width: 50%;
+        max-width: 500px;
+        margin: 80px auto;
+        padding: 20px;
+        border-radius: 10px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    ">
+
+            <h3 style="margin-top: 0;">Download Peta</h3>
+
+            <!-- GRID CARD -->
+            <div style="
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 🔥 2 kolom */
+    gap: 15px;
+">
+
+                <!-- CARD 1- RUTE SKENARIO 1 -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Skenario1.png" style="width: 100%; height: 80px; object-fit: cover;">
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Rute Evakuasi Skenario I</p>
+
+                    <a href="asset/Peta/Peta Geologi.pdf" download="Peta_Skenario1.png" style="text-decoration: none;">
+                        <button style="
+        width: 100%;
+        background: #8db3e2;
+        border: none;
+        font-size: 11px;
+        cursor: pointer;
+    ">
+                            Download
+                        </button>
+                    </a>
+                </div>
+
+                <!-- CARD 2 - RUTE SKENARIO 2 -->
+                <div style="
+                width: 150px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+            ">
+                    <img src="asset/Peta/Skenario2.png" style="width: 100%; height: 80px; object-fit: cover;">
+                    <p style="font-size: 11px; margin: 5px 0;">Peta Rute Evakuasi Skenario I</p>
+
+                    <a href="asset/Peta/Peta Geologi.pdf" download="Peta_Skenario1.png" style="text-decoration: none;">
+                        <button style="
+        width: 100%;
+        background: #8db3e2;
+        border: none;
+        font-size: 11px;
+        cursor: pointer;
+    ">
+                            Download
+                        </button>
+                </div>
+                </button>
+            </div>
+            <br>
+
+            <button onclick="closeModalRute()" style="
+            background: #ccc;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        ">
+                Tutup
+            </button>
+        </div>
+    </div>
+    <script>
+        function openModal() {
+            document.getElementById("myModal").style.display = "block";
+        }
+        function openModalRute() {
+            document.getElementById("myModalRute").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+        }
+
+        function closeModalRute() {
+            document.getElementById("myModalRute").style.display = "none";
+        }
+
+        // klik luar modal = tutup
+        window.onclick = function (event) {
+            const modal = document.getElementById("myModal");
+            const modalRute = document.getElementById("myModalRute");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+            if (event.target == modalRute) {
+                modalRute.style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+var json_BPBD_7 = {"type":"FeatureCollection","name":"BPBD_7","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"Id":1.0,"Keterangan":null},"geometry":{"type":"Point","coordinates":[110.321857235192553,-7.899501144038693]}}]}
