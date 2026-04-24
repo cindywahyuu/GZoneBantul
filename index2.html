@@ -15,202 +15,89 @@
     <link rel="stylesheet" href="css/leaflet.photon.css">
     <link rel="stylesheet" href="css/leaflet-measure.css">
     <style>
-       <style>
-    * {
-        box-sizing: border-box;
-    }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
 
-    html,
-    body {
-        width: 100%;
-        height: 100%;
-        padding: 0;
-        margin: 0;
-        overflow-x: hidden;
-    }
+        #map {
+            width: 100%;
+            height: calc(100% - 50px);
+            /* supaya tidak tertutup navbar */
+            padding: 0;
+            margin-top: 50px;
+        }
 
-    /* MAP */
-    #map {
-    position: fixed;
-    top: 60px;   /* tinggi navbar */
-    left: 0;
-    width: 100%;
-    height: calc(100vh - 60px);
-    z-index: 1;
-}
+        <style>html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
 
-    /* FOOTER */
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+        /* Map menyesuaikan navbar + footer */
+        #map {
+            width: 100%;
+            height: 100%-110px;
+            margin-top: 60px;
+        }
 
-    min-height: 85px;
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 130px;
 
-    background-color: rgba(255, 255, 255, 0.8) !important;
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            /* wajib */
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 20px;
+
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            color: #002b5c;
+            z-index: 9999;
+
+            footer p {
+                margin: 0;
+                text-align: center;
+                font-weight: 500;
+            }
+        }
+
+        footer p {
+            margin: 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        /* MODAL */
+#modalInfo {
+    display: none;
+
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    background: rgba(0,0,0,0.5);
+
+    z-index: 9999999999 !important; /* paling atas */
 
     display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 15px;
-
-    padding: 4px 12px;
-
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 11px;
-    color: #002b5c;
-
-    z-index: 9999;
-
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    white-space: nowrap;
-
-    -webkit-overflow-scrolling: touch;
+    justify-content: center;
+    align-items: center;
 }
-    footer p {
-        footer > div {
-    flex-shrink: 0;
-}
-        margin: 0;
-        font-weight: 500;
-    }
-
-    /* MODAL */
-    #modalInfo,
-    #myModal,
-    #myModalRute {
-        display: none;
-        position: fixed !important;
-        top: 0;
-        left: 0;
-
-        width: 100vw;
-        height: 100vh;
-
-        background: rgba(0, 0, 0, 0.5);
-
-        z-index: 999999;
-    }
-
-    /* IMAGE RESPONSIVE */
-    img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    /* BUTTON */
-    button {
-        max-width: 100%;
-    }
-
-    /* CHART */
-    canvas {
-        max-width: 100%;
-    }
-
-    /* ========================= */
-    /* RESPONSIVE TABLET */
-    /* ========================= */
-
-    @media screen and (max-width: 1024px) {
-
-        footer {
-            gap: 15px;
-            padding: 10px;
-        }
-
-        #map {
-            height: calc(100vh - 220px);
-        }
-    }
-
-    /* ========================= */
-    /* RESPONSIVE MOBILE */
-    /* ========================= */
-    
-    @media screen and (max-width: 768px) {
-
-        /* NAVBAR */
-        nav {
-            padding: 0 15px !important;
-        }
-
-        nav span {
-            font-size: 18px !important;
-        }
-
-        /* MAP */
-        #map {
-            height: calc(100vh - 300px);
-        }
-
-        /* FOOTER tetap horizontal tapi bisa scroll */
-        footer {
-            overflow-x: auto;
-            overflow-y: hidden;
-
-            white-space: nowrap;
-
-            padding: 10px;
-
-            gap: 15px;
-        }
-
-        /* semua section footer tetap posisi sama */
-        footer>div {
-            flex-shrink: 0;
-        }
-
-        /* chart */
-        #pieChart {
-            width: 180px !important;
-            height: 180px !important;
-        }
-
-        /* button panel */
-        button {
-            font-size: 10px !important;
-        }
-
-        /* modal responsive */
-        #modalInfo>div,
-        #myModal>div,
-        #myModalRute>div {
-            width: 95% !important;
-            max-width: 95% !important;
-            margin: 20px auto !important;
-
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        /* grid modal */
-       <div class="modal-grid" style="
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 15px;
-">
-
-        /* card modal */
-       <div class="modal-grid" style="
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 15px;
-">
-    }
-</style>
-@media screen and (max-width: 768px) {
-
-    footer {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
-
-}
+    </style>
     </style>
     <title>Dashboard Zona Gempabumi</title>
 </head>
@@ -369,7 +256,7 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
         <!-- KONTEN FOOTER -->
         <footer>
-        <div style="display: flex; align-items: flex-start; gap: 5px; padding-top: 30px;">
+            <div style="display: flex; align-items: flex-start; gap: 5px;">
 
                 <!-- ICON + TEKS -->
                 <div
@@ -498,7 +385,7 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                                             const value = data.datasets[0].data[i];
                                             const percentage = ((value / total) * 100).toFixed(1);
                                             return {
-                                                text: label,
+                                                text: label + ' (' + percentage + '%)',
                                                 fillStyle: data.datasets[0].backgroundColor[i],
                                                 index: i
                                             };
@@ -521,19 +408,18 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             </script>
 
             <!-- TEKS SAMPING -->
- <div style="text-align: left; padding-top: 30px;">
-               <p style="margin: 0; text-align: left; font-size: 12px;">EVAKUASI</p>
+            <div style="text-align: left;">
+                <p style="margin: 0; text-align: left; font-size: 12px;">EVAKUASI</p>
 
-              <div style="
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 10px;
-    height: 100%;
-    padding: 10px 10px;
-">
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    height: 100%;
+                    padding: 5px 10px; ">
+
                     <!-- BARIS 1 -->
-                    <div style="display: flex; align-items: center; gap: 10px; color:#002b5c;">
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
                         <img src="asset/smart-house_12873859.png" style="height: 25px;">
                         <div style="display: flex; flex-direction: column; line-height: 1.1;">
                             <span style="font-weight: bold;">Kantor BPBD</span>
@@ -541,7 +427,7 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     </div>
 
                     <!-- BARIS 2 -->
-                    <div style="display: flex; align-items: center; gap: 10px; color:#002b5c;">
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
                         <img src="asset/medical_3191060.png" style="height: 25px;">
                         <div style="display: flex; flex-direction: column; line-height: 1.1;">
                             <span style="font-weight: bold;">TES/TEA</span>
@@ -550,7 +436,7 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     </div>
 
                     <!-- BARIS 3 -->
-                    <div style="display: flex; align-items: center; gap: 10px; color:#002b5c;">
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
                         <img src="asset/add_11917377.png" style="height: 25px;">
                         <div style="display: flex; flex-direction: column; line-height: 1.1;">
                             <span style="font-weight: bold;">RS</span>
@@ -559,7 +445,7 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     </div>
 
                     <!-- BARIS 4 -->
-                    <div style="display: flex; align-items: center; gap: 10px; color:#002b5c;">
+                    <div style="display: flex; align-items: center; gap: 8px; color:#002b5c;">
                         <img src="asset/route_17492912.png" style="height: 25px;">
                         <div style="display: flex; flex-direction: column; line-height: 1.1;">
                             <span style="font-weight: bold;">Rute Evakuasi</span>
@@ -569,37 +455,24 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             </div>
 
             <!-- KANAN: PANEL BUTTON (TERPISAH) -->
-           <div style="
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-left: 70px;
-    padding-top: 30px;
-">
-               <a href="asset/Peta/Peta Zona Gempabumi.pdf"
-   download="Peta Zona Gempabumi.pdf"
-   style="text-decoration: none; color: black;">
-
-    <button style="
-        width: 250px;
-        height: 40px;
-        background: #8db3e2;
-        border: none;
-        font-size: 11px;
-        cursor: pointer;
-
-        color: black;
-
-        white-space: normal;
-        word-wrap: break-word;
-        line-height: 1.2;
-        text-align: center;
-        padding: 4px;
+            <div style="
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-left: 70px;
     ">
-        Download Peta Zona Kerentanan Wilayah Gempabumi
-    </button>
-
-</a>
+                <a href="asset/Peta/Peta Zona Gempabumi.pdf" download="Peta Zona Gempabumi.pdf">
+                        <button style="
+            width: 250px;
+            height: 35px;
+            background: #8db3e2;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+        ">
+                            Download Peta Zona Kerentanan Wilayah Gempabumi
+                        </button>
+                    </a>
 
                 <button onclick="openModal()" style="
     width: 250px;
